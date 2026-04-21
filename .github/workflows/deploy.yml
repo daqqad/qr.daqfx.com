@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cloudflare/wrangler-action@v3
         with:
-          apiKey: ${{ secrets.CF_API_KEY }}
-          email: ${{ secrets.CF_EMAIL }}
           accountId: f0abfdcca234e0d1e5f614f09043ac1e
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CF_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CF_EMAIL }}
