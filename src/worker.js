@@ -58,9 +58,11 @@ const HTML = `<!DOCTYPE html>
 
     #qr-wrap {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 260px;
+      gap: 12px;
     }
 
     #qr-box {
@@ -75,12 +77,22 @@ const HTML = `<!DOCTYPE html>
       color: #555;
       text-align: center;
     }
+
+    #counter {
+      font-size: 0.75rem;
+      color: #555;
+      text-align: right;
+    }
+
+    #counter.warn { color: #c8a020; }
+    #counter.over { color: #e05050; }
   </style>
 </head>
 <body>
   <h1>QR Share</h1>
   <div class="container">
     <textarea id="input" placeholder="Paste text here…" autofocus></textarea>
+    <div id="counter"></div>
     <div id="qr-wrap">
       <div id="qr-box"></div>
       <span id="hint">Type or paste text above to generate a QR code</span>
@@ -89,22 +101,51 @@ const HTML = `<!DOCTYPE html>
 
   <script>${QRLIB}<\/script>
   <script>
-    const input = document.getElementById('input');
-    const hint  = document.getElementById('hint');
-    const box   = document.getElementById('qr-box');
-    const size  = Math.min(280, window.innerWidth - 80);
-    let qr = null;
+    const input   = document.getElementById('input');
+    const hint    = document.getElementById('hint');
+    const box     = document.getElementById('qr-box');
+    const counter = document.getElementById('counter');
+    const size    = Math.min(280, window.innerWidth - 80);
+    const MAX     = 2331;
+    let qr    = null;
     let timer = null;
 
+    function byteLen(str) {
+      return new TextEncoder().encode(str).length;
+    }
+
+    function updateCounter(text) {
+      if (!text) { counter.textContent = ''; counter.className = ''; return; }
+      const used = byteLen(text);
+      const left = MAX - used;
+      counter.textContent = left >= 0 ? left + ' bytes remaining' : Math.abs(left) + ' bytes over limit';
+      counter.className = left < 0 ? 'over' : left < 200 ? 'warn' : '';
+    }
+
+    function resetBox() {
+      box.innerHTML = '';
+      box.style.display = 'none';
+      qr = null;
+    }
+
+    function showHint(msg, isError) {
+      hint.textContent = msg;
+      hint.style.color = isError ? '#e05050' : '#555';
+      hint.style.display = '';
+    }
+
     function render(text) {
+      updateCounter(text);
+
       if (!text) {
-        box.style.display = 'none';
-        hint.style.display = '';
-        if (qr) { qr.clear(); }
+        resetBox();
+        showHint('Type or paste text above to generate a QR code', false);
         return;
       }
+
       hint.style.display = 'none';
       box.style.display = 'inline-block';
+
       try {
         if (qr) {
           qr.makeCode(text);
@@ -119,10 +160,8 @@ const HTML = `<!DOCTYPE html>
           });
         }
       } catch(e) {
-        box.style.display = 'none';
-        hint.style.display = '';
-        hint.textContent = 'Text too long for QR code';
-        hint.style.color = '#e05050';
+        resetBox();
+        showHint('Text too long for QR code', true);
       }
     }
 
