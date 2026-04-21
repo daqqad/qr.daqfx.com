@@ -13,15 +13,11 @@ Live at **https://qr.daqfx.com**
 
 ## Deployment
 
-Deployments are automatic via **Cloudflare Workers Builds** — every push to `main` triggers a build and deploy.
-
 To deploy manually:
 
 ```bash
 npx wrangler deploy
 ```
-
-Requires a Cloudflare account with the `daqfx.com` zone and the `qr-daqfx` worker configured in `wrangler.toml`.
 
 ## Project structure
 
