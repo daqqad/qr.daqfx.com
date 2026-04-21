@@ -134,6 +134,11 @@ const HTML = `<!DOCTYPE html>
       hint.style.display = '';
     }
 
+    function sanitize(str) {
+      // Remove lone surrogates that make encodeURI throw URIError
+      return str.replace(/[\uD800-\uDFFF]/g, '');
+    }
+
     function render(text) {
       updateCounter(text);
 
@@ -143,15 +148,22 @@ const HTML = `<!DOCTYPE html>
         return;
       }
 
+      if (byteLen(text) > MAX) {
+        resetBox();
+        showHint('Text too long for QR code', true);
+        return;
+      }
+
       hint.style.display = 'none';
       box.style.display = 'inline-block';
 
       try {
+        const safe = sanitize(text);
         if (qr) {
-          qr.makeCode(text);
+          qr.makeCode(safe);
         } else {
           qr = new QRCode(box, {
-            text,
+            text: safe,
             width: size,
             height: size,
             colorDark: '#000000',
@@ -161,7 +173,7 @@ const HTML = `<!DOCTYPE html>
         }
       } catch(e) {
         resetBox();
-        showHint('Text too long for QR code', true);
+        showHint('Could not generate QR code: ' + e.message, true);
       }
     }
 
