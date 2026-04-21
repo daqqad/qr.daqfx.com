@@ -1,0 +1,8 @@
+name = "qr-daqfx"
+main = "src/worker.js"
+compatibility_date = "2024-11-01"
+account_id = "f0abfdcca234e0d1e5f614f09043ac1e"
+
+routes = [
+  { pattern = "qr.daqfx.com/*", zone_name = "daqfx.com" }
+]
